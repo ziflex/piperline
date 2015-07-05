@@ -1,0 +1,53 @@
+{
+  "name": "piperline",
+  "version": "0.1.0",
+  "description": "Simple task pipeline.",
+  "main": "lib/index.js",
+  "scripts": {
+    "clean": "rimraf lib",
+    "build": "babel src --out-dir lib",
+    "prepublish": "npm run lint && npm run build",
+    "lint": "eslint src test/unit --config ./.eslintrc",
+    "test": "npm run lint && karma start test/karma.conf.js",
+    "test:debug": "npm run lint && karma start test/karma.conf.js --singleRun false"
+  },
+  "keywords": [
+    "async",
+    "pipeline"
+  ],
+  "author": "Tim Voronov <ziflex@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash._basebind": "^2.4.1",
+    "symbol": "^0.2.1"
+  },
+  "devDependencies": {
+    "babel-eslint": "^3.1.20",
+    "babelify": "^6.1.2",
+    "browserify": "^10.2.4",
+    "chai": "^3.0.0",
+    "chai-spies": "^0.6.0",
+    "eslint": "^0.24.0",
+    "eslint-plugin-mocha": "^0.4.0",
+    "intern": "^2.2.2",
+    "karma": "^0.12.37",
+    "karma-browserify": "^4.2.1",
+    "karma-chai": "^0.1.0",
+    "karma-chrome-launcher": "^0.2.0",
+    "karma-mocha": "^0.2.0",
+    "karma-mocha-reporter": "^1.0.2",
+    "mocha": "^2.2.5",
+    "rimraf": "^2.4.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ziflex/piperline.git"
+  },
+  "browserify": {
+    "transform": [
+      [
+        "babelify"
+      ]
+    ]
+  }
+}
