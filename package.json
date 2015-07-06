@@ -1,7 +1,7 @@
 {
   "name": "piperline",
   "version": "0.1.1",
-  "description": "Simple task pipeline.",
+  "description": "Simple task pipeline builder.",
   "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf lib",

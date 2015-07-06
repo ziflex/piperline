@@ -3,7 +3,7 @@ import chai from 'chai';
 import spies from 'chai-spies';
 
 chai.use(spies);
-chai.should();
+const should = chai.should();
 
 describe('piperline', () => {
     let line = null;
@@ -231,6 +231,102 @@ describe('piperline', () => {
                     done();
                 })
                 .run(0);
+        });
+
+        it('should be able to run multiple times', (done) => {
+            const spy1 = chai.spy((data, next) => {
+                next();
+            });
+
+            const spy2 = chai.spy((data, next) => {
+                next();
+            });
+
+            line
+                .pipe(spy1)
+                .pipe(spy2)
+                .run(0, (err, result) => {
+                    should.not.exist(err);
+                    line.run(result, () => {
+                        done();
+                    });
+                });
+        });
+
+        it('should emit error by passing `Error` object to `complete` callback', (done) => {
+            const errSpy = chai.spy();
+
+            line
+                .pipe((data, next) => {
+                    next(data);
+                })
+                .pipe((data, next, complete) => {
+                    complete(new Error('Test error'));
+                })
+                .on('error', errSpy)
+                .run(0, (err, data) => {
+                    should.exist(err);
+                    should.not.exist(data);
+
+                    setTimeout(() => {
+                        errSpy.should.have.been.called();
+                        done();
+                    }, 10);
+                });
+        });
+
+        it('should emit error by passing `Error` object to `next` callback', (done) => {
+            const errSpy = chai.spy();
+
+            line
+                .pipe((data, next) => {
+                    next(new Error('Test error'));
+                })
+                .pipe((data, next, complete) => {
+                    complete(data);
+                })
+                .on('error', errSpy)
+                .run(0, (err, data) => {
+                    should.exist(err);
+                    should.not.exist(data);
+
+                    setTimeout(() => {
+                        errSpy.should.have.been.called();
+                        done();
+                    }, 10);
+                });
+        });
+
+        it('should be able to add new pipes', (done) => {
+            const spy1 = chai.spy((data, next) => {
+                next(data);
+            });
+
+            const spy2 = chai.spy((data, next) => {
+                next(data);
+            });
+
+            const spy3 = chai.spy((data, next) => {
+                next(data);
+            });
+
+            line
+                .pipe(spy1)
+                .pipe(spy2)
+                .run(() => {
+                    line
+                        .pipe(spy3)
+                        .run((err, data) => {
+                            should.not.exist(err);
+                            should.not.exist(data);
+
+                            spy1.should.have.been.called.twice();
+                            spy2.should.have.been.called.twice();
+                            spy3.should.have.been.called.once();
+
+                            done();
+                        });
+                });
         });
     });
 });
