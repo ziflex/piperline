@@ -6,13 +6,13 @@ chai.use(spies);
 chai.should();
 
 describe('piperline', () => {
+    let line = null;
+
+    beforeEach(() => {
+        line = pipeline.create();
+    });
+
     describe('building', function MainUnit() {
-        let line = null;
-
-        beforeEach(() => {
-            line = pipeline.create();
-        });
-
         it('should execute in order', (done) => {
             let result = '';
             line
@@ -34,7 +34,9 @@ describe('piperline', () => {
                 })
                 .run();
         });
+    });
 
+    describe('data flow', function DataFlowUnit() {
         it('should pass down the data', (done) => {
             line
                 .pipe((data, next) => {
@@ -43,8 +45,8 @@ describe('piperline', () => {
                 .pipe((data, next) => {
                     next(data + 1);
                 })
-                .pipe((data, next) => {
-                    next(data + 1);
+                .pipe((data, next, complete) => {
+                    complete(data + 1);
                 })
                 .on('done', (data) => {
                     data.should.be.equal(3);
@@ -52,8 +54,136 @@ describe('piperline', () => {
                 })
                 .run(0);
         });
+    });
 
-        it('should stop processing', (done) => {
+    describe('execution', function ExecutionUnit() {
+        it('should NOT run until the previous execution completed', (done) => {
+            function ShouldFail() {
+                line
+                    .pipe((data, next) => next(data))
+                    .pipe((data, next) => next(data))
+                    .pipe((data, next) => next(data));
+
+                line.run(0);
+                line.run(0);
+            }
+
+            ShouldFail.should.Throw();
+            done();
+        });
+
+        it('should NOT execute `next()` and `done()` at the same time', (done) => {
+            const callbacksCount = 2;
+            let callbacks = 0;
+
+            function callback() {
+                callbacks += 1;
+
+                if (callbacks === callbacksCount) {
+                    done();
+                }
+            }
+
+            const spy1 = chai.spy((data, next) => {
+                next(data + 1);
+            });
+
+            pipeline.create()
+                .pipe((data, next, complete) => {
+                    next(data + 1);
+                    complete(data);
+                })
+                .pipe(spy1)
+                .on('done', (result) => {
+                    result.should.be.equal(1);
+                    spy1.should.not.have.been.called();
+                    callback();
+                })
+                .on('error', callback)
+                .run(0);
+
+            const spy2 = chai.spy((data, next) => {
+                next(data + 1);
+            });
+
+            pipeline.create()
+                .pipe((data, next, complete) => {
+                    complete(data);
+                    next(data + 1);
+                })
+                .pipe(spy2)
+                .on('done', (result) => {
+                    result.should.be.equal(0);
+                    spy2.should.not.have.been.called();
+                    callback();
+                })
+                .on('error', callback)
+                .run(0);
+        });
+
+        it('should execute `next()` only once per call', (done) => {
+            const spy1 = chai.spy((data, next, complete) => {
+                complete(data + 1);
+            });
+
+            let result = 0;
+            let called = false;
+
+            function callback(data) {
+                result += data;
+                if (!called) {
+                    called = true;
+
+                    setTimeout(() => {
+                        result.should.be.equal(2);
+                        spy1.should.have.been.called.once();
+                        done();
+                    }, 100);
+                }
+            }
+
+            pipeline.create()
+                .pipe((data, next) => {
+                    next(data + 1);
+                    next(data + 1);
+                })
+                .pipe(spy1)
+                .on('done', callback)
+                .run(0);
+        });
+
+        it('should execute `done()` only once per run', (done) => {
+            const spy1 = chai.spy((data, next) => {
+                next(data + 1);
+            });
+
+            let result = 0;
+            let called = false;
+
+            function callback(data) {
+                result += data;
+                if (!called) {
+                    called = true;
+
+                    setTimeout(() => {
+                        result.should.be.equal(1);
+                        spy1.should.not.have.been.called();
+                        done();
+                    }, 100);
+                }
+            }
+
+            pipeline.create()
+                .pipe((data, next, complete) => {
+                    complete(data + 1);
+                    complete(data + 1);
+                })
+                .pipe(spy1)
+                .on('done', callback)
+                .run(0);
+        });
+
+        it('should stop execution', (done) => {
             const spy1 = chai.spy((data, next) => {
                 next(data + 1);
             });

@@ -4,19 +4,42 @@ import utils from './utils';
 
 const PIPES = Symbol('PIPES');
 const ASSEMBLY = Symbol('ASSEMBLY');
+const RUNNING = Symbol('RUNNING');
 
 function Assembly(data) {
-    this.invoke(data, this.next, this.complete);
+    const context = { done: false };
+
+    this.invoke(data, (result) => {
+        if (!context.done) {
+            context.done = true;
+            this.next(result);
+        }
+    }, (result) => {
+        if (!context.done) {
+            context.done = true;
+            this.complete(result);
+        }
+    });
+}
+
+function Start() {
+    this[RUNNING] = true;
+}
+
+function End() {
+    this[RUNNING] = false;
 }
 
 function Complete(data) {
+    End.apply(this);
     this.emit('done', data);
 }
 
-class AsyncPipeline extends EventEmitter {
+class Pipeline extends EventEmitter {
     constructor() {
         super();
         this[PIPES] = [];
+        this[RUNNING] = false;
     }
 
     pipe(item) {
@@ -26,6 +49,12 @@ class AsyncPipeline extends EventEmitter {
     }
 
     run(context) {
+        if (this[RUNNING]) {
+            throw new Error('Tasks already are running');
+        }
+
+        Start.apply(this);
+
         const complete = utils.bindFunc(Complete, this);
 
         if (!this[ASSEMBLY]) {
@@ -62,6 +91,6 @@ class AsyncPipeline extends EventEmitter {
 
 export default {
     create() {
-        return new AsyncPipeline();
+        return new Pipeline();
     }
 };

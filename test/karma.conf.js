@@ -5,9 +5,6 @@ module.exports = function config(config) {
         // enable / disable watching file and executing tests whenever any file changes
         autoWatch: true,
 
-        // base path, that will be used to resolve files and exclude
-        //basePath: '<%= options["base-path"] %>',
-
         // testing framework to use (jasmine/mocha/qunit/...)
         frameworks: [
             'browserify',
@@ -31,9 +28,6 @@ module.exports = function config(config) {
             './unit/**/*.js'
         ],
 
-        // list of files / patterns to exclude
-        //exclude: [<%= templateArray(options["exclude-files"]) %>],
-
         // web server port
         port: 9000,
 
@@ -55,8 +49,7 @@ module.exports = function config(config) {
             'karma-chrome-launcher',
             'karma-mocha',
             'karma-chai',
-            'karma-mocha-reporter',
-            'karma-html-reporter'
+            'karma-mocha-reporter'
         ],
 
         // Continuous Integration mode
