@@ -275,16 +275,20 @@ describe('piperline', () => {
                 });
         });
 
-        it('should emit error by passing `Error` object to `next` callback', (done) => {
+        it('should emit error by passing `Error` object to `next` callback and terminate the execution', (done) => {
             const errSpy = chai.spy();
+            const spy = chai.spy((data, next) => {
+                next();
+            });
 
             line
                 .pipe((data, next) => {
                     next(new Error('Test error'));
                 })
-                .pipe((data, next, complete) => {
-                    complete(data);
+                .pipe((data, next) => {
+                    next(data);
                 })
+                .pipe(spy)
                 .on('error', errSpy)
                 .run(0, (err, data) => {
                     should.exist(err);
@@ -292,6 +296,40 @@ describe('piperline', () => {
 
                     setTimeout(() => {
                         errSpy.should.have.been.called();
+                        spy.should.not.have.been.called();
+                        done();
+                    }, 10);
+                });
+        });
+
+        it('should terminate the execution if initial data is `Error`', (done) => {
+            const errSpy = chai.spy();
+            const spy1 = chai.spy((data, next) => {
+                next();
+            });
+
+            const spy2 = chai.spy((data, next) => {
+                next();
+            });
+
+            const spy3 = chai.spy((data, next) => {
+                next();
+            });
+
+            line
+                .pipe(spy1)
+                .pipe(spy2)
+                .pipe(spy3)
+                .on('error', errSpy)
+                .run(new Error('Test error'), (err, data) => {
+                    should.exist(err);
+                    should.not.exist(data);
+
+                    setTimeout(() => {
+                        errSpy.should.have.been.called();
+                        spy1.should.not.have.been.called();
+                        spy2.should.not.have.been.called();
+                        spy3.should.not.have.been.called();
                         done();
                     }, 10);
                 });
@@ -327,6 +365,36 @@ describe('piperline', () => {
                             done();
                         });
                 });
+        });
+
+        it('should throw exception when pipes is tried to be added during execution', (done) => {
+            const func = () => {
+                line.pipe((data, next) => next());
+            };
+
+            line
+                .pipe((data, next) => {
+                    setTimeout(() => next(), 200);
+                })
+                .run();
+
+            should.throw(func);
+            done();
+        });
+
+        it('``isRunning`` property should be up to date', (done) => {
+            line.isRunning.should.be.equal(false);
+
+            line
+                .pipe((data, next) => {
+                    setTimeout(() => next(), 200);
+                })
+                .run(() => {
+                    line.isRunning.should.be.equal(false);
+                    done();
+                });
+
+            line.isRunning.should.be.equal(true);
         });
     });
 });

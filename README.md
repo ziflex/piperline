@@ -1,6 +1,6 @@
 # piperline
 
-Simple task pipeline builder.
+Simple task pipeline runner.
 
 ## Features
 * async tasks
@@ -33,7 +33,7 @@ Simple task pipeline builder.
         .run();
 ```
 
-or with initial data
+with initial data
 
 ```
 
@@ -55,7 +55,7 @@ or with initial data
         .run(1);
 ```
 
-or with run callback
+with run callback
 
 ```
 
@@ -81,7 +81,8 @@ or with run callback
         });
 ```
 
-**Note: The difference between events, that this callback passed to ``run`` method is called only once when the pipeline work is done.**
+**Note: The difference between events and callback is, that this callback passed to ``run`` 
+method is called only once when the execution is completed.**
 
 ### With interruption
 
@@ -137,7 +138,7 @@ or with run callback
 
 ```
 
-**Note: In order to run the pipeline second time you must wait for the completion of the previous one.** 
+**Note: In order to execute the pipeline second time you must wait for the completion of the previous execution.** 
 
 ### Manual error emitting
 
@@ -167,17 +168,17 @@ Emitting error via callback (``done`` or ``next``) by passing ``Error`` object.
 
 ### piperline.create()
 
-Creates a new pipeline builder.
+Creates a new pipeline runner.
 
 ### .pipe(function(data, next, done))
 
-Adds pipe handler.
+Adds pipe for execution.
 Can be invoked only before or after execution.
 
 `data` - any data passed from top pipes or `run` method.
 
-`next` - callback which invokes next pipe handler or complete the pipeline. 
-Any passed data to this callback will be transferred to the next pipe handler.
+`next` - callback which invokes next pipe or completes the execution. 
+Any passed data to this callback will be transferred to the next pipe.
 
 `done` - callback which terminates the execution of the whole pipeline.
 
@@ -187,7 +188,7 @@ and `error` event will be emitted with this object.**
 
 ### .run([data],[function(error, result)])
 
-Builds and runs the pipeline.
+Builds and runs the execution.
 
 `data` - any initial data which will be passed to the first pipe.
 
@@ -195,6 +196,10 @@ Builds and runs the pipeline.
 
 
 **Note: This method can be invoked multiple times, but only when the previous execution is completed.**
+
+### .isRunning
+
+Detects whether the execution is running.
 
 ### .on('done', function(result))
 

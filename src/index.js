@@ -11,6 +11,11 @@ const COMPLETE = Symbol('COMPLETE');
 function Assembly(data) {
     const context = { done: false };
 
+    // Terminate the execution if data is `Error` object.
+    if (utils.isError(data)) {
+        this.complete(data);
+    }
+
     this.invoke(data, (result) => {
         if (!context.done) {
             context.done = true;
@@ -51,7 +56,15 @@ class Pipeline extends EventEmitter {
         }, this);
     }
 
+    get isRunning() {
+        return this[RUNNING];
+    }
+
     pipe(item) {
+        if (this[RUNNING]) {
+            throw new Error('Pipeline can not be changed during the run.');
+        }
+
         this[PIPES].push(item);
         this[ASSEMBLY] = null;
         return this;
