@@ -2,6 +2,17 @@
 
 Simple task pipeline runner.
 
+[![npm version](https://badge.fury.io/js/piperline.svg)](https://www.npmjs.com/package/piperline)
+[![Dependency Status](https://david-dm.org/ziflex/piperline.svg)](https://david-dm.org/ziflex/piperline)
+
+## Install
+
+```sh
+
+$ npm install --save piperline
+
+```
+
 ## Features
 * async tasks
 * re-usage
