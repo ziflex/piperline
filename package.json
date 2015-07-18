@@ -1,6 +1,6 @@
 {
   "name": "piperline",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Simple task pipeline runner.",
   "main": "lib/index.js",
   "scripts": {
@@ -19,8 +19,8 @@
   "author": "Tim Voronov <ziflex@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "lodash._basebind": "^2.4.1",
-    "symbol": "^0.2.1"
+    "es6-symbol": "^2.0.1",
+    "lodash._basebind": "^2.4.1"
   },
   "devDependencies": {
     "babel-eslint": "^3.1.20",

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.2
+
+### Updated
+
+* each ``pipe`` is executed asynchronously
+
+
 ## 0.2.1
 
 ### Fixed

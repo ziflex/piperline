@@ -1,5 +1,5 @@
 import { EventEmitter } from 'events';
-import Symbol from 'symbol';
+import Symbol from 'es6-symbol';
 import utils from './utils';
 
 const PIPES = Symbol('PIPES');
@@ -8,23 +8,30 @@ const RUNNING = Symbol('RUNNING');
 const PENDING_CALLBACK = Symbol('PENDING_CALLBACK');
 const COMPLETE = Symbol('COMPLETE');
 
-function Assembly(data) {
-    const context = { done: false };
-
-    // Terminate the execution if data is `Error` object.
+function execution(data) {
+    // Terminates the execution if data is `Error` object.
     if (utils.isError(data)) {
         this.complete(data);
+        return;
     }
 
-    this.invoke(data, (result) => {
-        if (!context.done) {
-            context.done = true;
-            this.next(result);
-        }
-    }, (result) => {
-        if (!context.done) {
-            context.done = true;
-            this.complete(result);
+    utils.executeAsAsync(() => {
+        const context = { done: false };
+
+        try {
+            this.invoke(data, (result) => {
+                if (!context.done) {
+                    context.done = true;
+                    this.next(result);
+                }
+            }, (result) => {
+                if (!context.done) {
+                    context.done = true;
+                    this.complete(result);
+                }
+            });
+        } catch (ex) {
+            this.complete(ex);
         }
     });
 }
@@ -35,11 +42,13 @@ class Pipeline extends EventEmitter {
         this[PIPES] = [];
         this[RUNNING] = false;
         this[PENDING_CALLBACK] = null;
-        this[COMPLETE] = utils.bindFunc(function Complete(err, data) {
-            let error = err;
+        this[COMPLETE] = utils.bindFunc(function Complete(result) {
+            let error = null;
+            let data = result;
 
-            if (!err && utils.isError(data)) {
-                error = data;
+            if (utils.isError(result)) {
+                error = result;
+                data = null;
             }
 
             const callback = this[PENDING_CALLBACK];
@@ -85,16 +94,10 @@ class Pipeline extends EventEmitter {
         this[RUNNING] = true;
         this[PENDING_CALLBACK] = callback;
 
-        const onSuccess = utils.bindFunc(function onSuccess(data) {
-            this[COMPLETE](null, data);
-        }, this);
-
-        const onFailure = utils.bindFunc(function onFailure(err) {
-            this[COMPLETE](err, null);
-        }, this);
+        const complete = utils.bindFunc(this[COMPLETE], this);
 
         if (!this[ASSEMBLY]) {
-            let assembly = onSuccess;
+            let assembly = complete;
             const pipes = this[PIPES];
             const len = pipes.length;
             let i;
@@ -102,10 +105,10 @@ class Pipeline extends EventEmitter {
             for (i = len - 1; i >= 0; i -= 1) {
                 const pipe = pipes[i];
                 if (pipe) {
-                    assembly = utils.bindFunc(Assembly, {
+                    assembly = utils.bindFunc(execution, {
                         invoke: pipe,
                         next: assembly,
-                        complete: onSuccess
+                        complete: complete
                     });
                 }
             }
@@ -113,13 +116,13 @@ class Pipeline extends EventEmitter {
             this[ASSEMBLY] = assembly;
         }
 
-        utils.executeAsAsync(utils.bindFunc(function Run(sym, ctx, success, failure) {
+        utils.executeAsAsync(utils.bindFunc(function Run(sym, ctx, done) {
             try {
-                this[sym](ctx, success);
+                this[sym](ctx, done);
             } catch(ex) {
-                failure(ex);
+                done(ex);
             }
-        }, this, ASSEMBLY, context, onSuccess, onFailure));
+        }, this, ASSEMBLY, context, complete));
 
         return this;
     }
