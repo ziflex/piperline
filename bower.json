@@ -1,0 +1,31 @@
+{
+  "name": "piperline",
+  "version": "0.2.2",
+  "homepage": "https://github.com/ziflex/piperline",
+  "authors": [
+    "ziflex <ziflex@gmail.com>"
+  ],
+  "description": "Simple task pipeline runner.",
+  "main": "dist/piperline.js",
+  "moduleType": [
+    "amd",
+    "globals",
+    "node"
+  ],
+  "keywords": [
+    "async",
+    "pipeline",
+    "task",
+    "runner"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "lib",
+    "src"
+  ]
+}
