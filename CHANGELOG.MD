@@ -2,6 +2,10 @@
 
 ## 0.2.2
 
+### Added
+
+* Browser build
+
 ### Updated
 
 * each ``pipe`` is executed asynchronously
