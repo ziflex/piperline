@@ -7,9 +7,18 @@ Simple task pipeline runner.
 
 ## Install
 
+via npm
+
 ```sh
 
 $ npm install --save piperline
+
+```
+via bower
+
+```sh
+
+$ bower install --save piperline
 
 ```
 
