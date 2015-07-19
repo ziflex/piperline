@@ -1,8 +1,11 @@
 # piperline
 
-Simple task pipeline runner.
+> Split your async code into small tasks.
+
+Simple task pipeline runner which allows you to split you async code into small tasks.
 
 [![npm version](https://badge.fury.io/js/piperline.svg)](https://www.npmjs.com/package/piperline)
+[![Bower version](https://badge.fury.io/bo/piperline.svg)](http://badge.fury.io/bo/piperline)
 [![Dependency Status](https://david-dm.org/ziflex/piperline.svg)](https://david-dm.org/ziflex/piperline)
 
 ## Install
@@ -33,129 +36,128 @@ $ bower install --save piperline
 
 ### Basic
 
+```javascript
+
+var piperline = require('piperline');
+
+piperline.create()
+    .pipe(function(data, next, done) {
+        next('foo');
+    })
+    .pipe(function(data, next, done) {
+        next(data + ' bar');
+    })
+    .on('error', function(err) {
+        console.error(err);
+    })
+    .on('done', function(result) {
+        console.log(result); // foo bar
+    })
+    .run();
 ```
 
-    var piperline = require('piperline');
-    
-    piperline.create()
-        .pipe(function(data, next, done) {
-            next('foo');
-        })
-        .pipe(function(data, next, done) {
-            next(data + ' bar');
-        })
-        .on('error', function(err) {
-            console.error(err);
-        })
-        .on('done', function(result) {
-            console.log(result); // foo bar
-        })
-        .run();
+### Passing initial data
+
+```javascript
+
+var piperline = require('piperline');
+
+piperline.create()
+    .pipe(function(data, next, done) {
+        next(data + 1);
+    })
+    .pipe(function(data, next, done) {
+        next(data + 2);
+    })
+    .on('error', function(err) {
+        console.error(err);
+    })
+    .on('done', function(result) {
+        console.log(result); // 4
+    })
+    .run(1);
 ```
 
-with initial data
+### Passing callback
 
-```
+```javascript
 
-    var piperline = require('piperline');
-    
-    piperline.create()
-        .pipe(function(data, next, done) {
-            next(data + 1);
-        })
-        .pipe(function(data, next, done) {
-            next(data + 2);
-        })
-        .on('error', function(err) {
-            console.error(err);
-        })
-        .on('done', function(result) {
-            console.log(result); // 4
-        })
-        .run(1);
-```
+var pipeline = require('piperline').create();
 
-with run callback
-
-```
-
-    var pipeline = require('piperline').create();
-    
-    pipeline
-        .pipe(function(data, next, done) {
-            next(data + 1);
-        })
-        .pipe(function(data, next, done) {
-            next(data + 2);
-        })
-        .on('error', function(err) {
-            console.error(err);
-        })
-        .on('done', function(result) {
-            console.log(result); // 3
-        })
-        .run(0, function(err, data) {
-            if (err) {
-                // do stuff
-            }
-        });
+pipeline
+    .pipe(function(data, next, done) {
+        next(data + 1);
+    })
+    .pipe(function(data, next, done) {
+        next(data + 2);
+    })
+    .on('error', function(err) {
+        console.error(err);
+    })
+    .on('done', function(result) {
+        console.log(result); // 3
+    })
+    .run(0, function(err, data) {
+        if (err) {
+            // do stuff
+        }
+    });
 ```
 
 **Note: The difference between events and callback is, that this callback passed to ``run`` 
 method is called only once when the execution is completed.**
 
-### With interruption
+### Pipeline interruption
 
-```
+```javascript
 
-    var piperline = require('piperline');
-    
-    piperline.create()
-        .pipe(function(data, next, done) {
-            next(data + 1);
-        })
-        .pipe(function(data, next, done) {
-            if (data === 1) {
-                done(data);
-            }
-            
-            next(data + 2);
-        })
-        .pipe(function(data, next, done) {
-            next(data + 3);
-        })
-        .on('error', function(err) {
-            console.error(err);
-        })
-        .on('done', function(result) {
-            console.log(result); // 1
-        })
-        .run(0);
+var piperline = require('piperline');
+
+piperline.create()
+    .pipe(function(data, next, done) {
+        next(data + 1);
+    })
+    .pipe(function(data, next, done) {
+        if (data === 1) {
+            done(data);
+        }
+        
+        next(data + 2);
+    })
+    .pipe(function(data, next, done) {
+        next(data + 3);
+    })
+    .on('error', function(err) {
+        console.error(err);
+    })
+    .on('done', function(result) {
+        console.log(result); // 1
+    })
+    .run(0);
 ```
 
 ### Re-usage
 
-```
+```javascript
 
-    var piperline = require('piperline');
-    
-    var pipeline = piperline.create();
-    
-    pipeline
-        .pipe(function(data, next, done) {
-            // do stuff
-            next();
-        })
-        .pipe(function(data, next, done) {
-            // do stuff
-            next();
-        })
-        .run(function(err, result) {
-            if (err) {
-                pipeline.run(data);
-            }
-        });
+var piperline = require('piperline');
 
+var pipeline = piperline.create();
+
+pipeline
+    .pipe(function(data, next, done) {
+        // do stuff
+        next();
+    })
+    .pipe(function(data, next, done) {
+        // do stuff
+        next();
+    })
+    .run(function(err, result) {
+        if (err) {
+            pipeline.run(data);
+        }
+    });
 ```
 
 **Note: In order to execute the pipeline second time you must wait for the completion of the previous execution.** 
@@ -164,25 +166,22 @@ method is called only once when the execution is completed.**
 
 Emitting error via callback (``done`` or ``next``) by passing ``Error`` object.
 
-```
+```javascript
   
-    var pipeline = require('piperline').create();
-    
-    pipeline
-        .pipe(function(data, next) {
-            next(data);
-        })
-        .pipe(function(data, next, done) {
-            done(new Error());
-        })
-        .on('error', function(err) {
-          console.log(err); // Error
-        })
-        .run(0);
-      
+var pipeline = require('piperline').create();
 
+pipeline
+    .pipe(function(data, next) {
+        next(data);
+    })
+    .pipe(function(data, next, done) {
+        done(new Error());
+    })
+    .on('error', function(err) {
+      console.log(err); // Error
+    })
+    .run(0);
 ```
-
 
 ## API
 
