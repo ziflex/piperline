@@ -5,8 +5,7 @@
 Simple task pipeline runner which allows you to split you async code into small tasks.
 
 [![npm version](https://badge.fury.io/js/piperline.svg)](https://www.npmjs.com/package/piperline)
-[![Bower version](https://badge.fury.io/bo/piperline.svg)](http://badge.fury.io/bo/piperline)
-[![Dependency Status](https://david-dm.org/ziflex/piperline.svg)](https://david-dm.org/ziflex/piperline)
+[![Build Status](https://secure.travis-ci.org/ziflex/piperline.svg?branch=master)](http://travis-ci.org/ziflex/piperline)
 
 ## Install
 
@@ -104,7 +103,7 @@ pipeline
     });
 ```
 
-**Note: The difference between events and callback is, that this callback passed to ``run`` 
+**Note: The difference between events and callback is, that this callback passed to ``run``
 method is called only once when the execution is completed.**
 
 ### Pipeline interruption
@@ -121,7 +120,7 @@ piperline.create()
         if (data === 1) {
             done(data);
         }
-        
+
         next(data + 2);
     })
     .pipe(function(data, next, done) {
@@ -160,14 +159,14 @@ pipeline
     });
 ```
 
-**Note: In order to execute the pipeline second time you must wait for the completion of the previous execution.** 
+**Note: In order to execute the pipeline second time you must wait for the completion of the previous execution.**
 
 ### Manual error emitting
 
 Emitting error via callback (``done`` or ``next``) by passing ``Error`` object.
 
 ```javascript
-  
+
 var pipeline = require('piperline').create();
 
 pipeline
@@ -196,7 +195,7 @@ Can be invoked only before or after execution.
 
 `data` - any data passed from top pipes or `run` method.
 
-`next` - callback which invokes next pipe or completes the execution. 
+`next` - callback which invokes next pipe or completes the execution.
 Any passed data to this callback will be transferred to the next pipe.
 
 `done` - callback which terminates the execution of the whole pipeline.
@@ -230,6 +229,6 @@ On error occur.
 
 **Note: The difference between events and `run` callback is that `run` callback invoked only once when the particular execution is completed.**
 
+### .on('end', function(err, result))
 
-
-
+On execution complete. It's fired whenever what result of execution is.
