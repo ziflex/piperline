@@ -3,9 +3,17 @@
 ## 0.3
 
 ### Changed
-- Replaced native Node EventEmitter with EventEmitter3.
-- [Breaking changes] Removed inheritance from EventEmitter. Exposed only methods ``on``, ``once``, ``off``.
+- Replaced Node EventEmitter with EventEmitter3.
 - Removed dependency on ``lodash._basebind``. Native implementation is used.
+
+### Added
+- ``end`` event. Fired every time when execution completed despite what result is.
+- ``run`` event. Fired every time when execution started.
+- Possibility to pass array of pipes during initialization.
+
+### Removed
+- [Breaking changes] Removed inheritance from EventEmitter. Exposed only methods ``on``, ``once``, ``off``.
+- [Breaking changes] Removed packages from bower.
 
 ## 0.2.2
 

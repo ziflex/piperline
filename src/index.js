@@ -140,13 +140,13 @@ class Pipeline {
 
         this[EMITTER].emit('run');
 
-        utils.executeAsAsync(function Run(sym, ctx, done) {
+        utils.executeAsAsync(function Run(asm, ctx, done) {
             try {
-                this[sym](ctx, done);
+                asm(ctx, done);
             } catch (ex) {
                 done(ex);
             }
-        }.bind(this, ASSEMBLY, context, complete));
+        }.bind(this, this[ASSEMBLY], context, complete));
 
         return this;
     }
