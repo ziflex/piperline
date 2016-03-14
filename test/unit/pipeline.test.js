@@ -459,5 +459,23 @@ describe('piperline', () => {
                 })
                 .run(0);
         });
+
+        it('should emit "run" everytime when pipeline was started', (done) => {
+            const spy = chai.spy();
+
+            Pipeline.create()
+                .pipe((data, next) => {
+                    utils.executeAsAsync(() => next(data + 1));
+                })
+                .pipe((data, next) => {
+                    utils.executeAsAsync(() => next(data + 2));
+                })
+                .on('run', spy)
+                .on('end', () => {
+                    spy.should.have.been.called.once();
+                    done();
+                })
+                .run(0);
+        });
     });
 });

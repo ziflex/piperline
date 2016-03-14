@@ -215,20 +215,22 @@ Builds and runs the execution.
 
 **Note: This method can be invoked multiple times, but only when the previous execution is completed.**
 
-### .isRunning
+### .isRunning   
 
-Detects whether the execution is running.
+Detects whether the execution is running.   
 
-### .on('done', function(result))
+### .on('run', function())   
 
-On execution complete.
+On execution start.   
 
-### .on('error', function(error))
+### .on('end', function(err, result))   
 
-On error occur.
+On execution complete. It's fired whenever what result of execution is.   
 
-**Note: The difference between events and `run` callback is that `run` callback invoked only once when the particular execution is completed.**
+### .on('done', function(result))   
 
-### .on('end', function(err, result))
+On execution successfully complete.   
 
-On execution complete. It's fired whenever what result of execution is.
+### .on('error', function(error))   
+
+On error occur.   

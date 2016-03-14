@@ -131,6 +131,8 @@ class Pipeline {
             this[ASSEMBLY] = assembly;
         }
 
+        this[EMITTER].emit('run');
+
         utils.executeAsAsync(function Run(sym, ctx, done) {
             try {
                 this[sym](ctx, done);
