@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.3
+
+### Changed
+- Replaced native Node EventEmitter with EventEmitter3.
+- [Breaking changes] Removed inheritance from EventEmitter. Exposed only methods ``on``, ``once``, ``off``.
+- Removed dependency on ``lodash._basebind``. Native implementation is used.
+
 ## 0.2.2
 
 ### Added
@@ -20,7 +27,7 @@
 
 ### Added
 
-* Terminates the whole execution if the initial data is ``Error`` object. 
+* Terminates the whole execution if the initial data is ``Error`` object.
 * ``isRunning`` property.
 
 ## 0.2.0
@@ -50,7 +57,7 @@
 ```
 
   var pipeline = require('piperline').create();
-  
+
   pipeline
     .pipe(task1)
     .pipe(task2)
@@ -63,12 +70,12 @@
 
 ```
 
-or 
+or
 
 ```
 
   var pipeline = require('piperline').create();
-  
+
   pipeline
     .pipe(task1)
     .pipe(task2)

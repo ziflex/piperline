@@ -1,4 +1,6 @@
-import pipeline from '../../src/index';
+/* eslint-disable new-cap, prefer-template */
+
+import Pipeline from '../../src/index';
 import utils from '../../src/utils';
 import chai from 'chai';
 import spies from 'chai-spies';
@@ -10,10 +12,10 @@ describe('piperline', () => {
     let line = null;
 
     beforeEach(() => {
-        line = pipeline.create();
+        line = Pipeline.create();
     });
 
-    describe('building', function MainUnit() {
+    describe('building', () => {
         it('should execute in order', (done) => {
             let result = '';
             line
@@ -37,7 +39,7 @@ describe('piperline', () => {
         });
     });
 
-    describe('data flow', function DataFlowUnit() {
+    describe('data flow', () => {
         it('should pass down the data', (done) => {
             line
                 .pipe((data, next) => {
@@ -57,7 +59,7 @@ describe('piperline', () => {
         });
     });
 
-    describe('execution', function ExecutionUnit() {
+    describe('execution', () => {
         it('should NOT run until the previous execution completed', (done) => {
             function ShouldFail() {
                 line
@@ -89,7 +91,7 @@ describe('piperline', () => {
                 utils.executeAsAsync(() => next(data + 1));
             });
 
-            pipeline.create()
+            Pipeline.create()
                 .pipe((data, next, complete) => {
                     utils.executeAsAsync(() => next(data + 1));
                     utils.executeAsAsync(() => complete(data));
@@ -107,7 +109,7 @@ describe('piperline', () => {
                 utils.executeAsAsync(() => next(data + 1));
             });
 
-            pipeline.create()
+            Pipeline.create()
                 .pipe((data, next, complete) => {
                     utils.executeAsAsync(() => complete(data));
                     utils.executeAsAsync(() => next(data + 1));
@@ -143,7 +145,7 @@ describe('piperline', () => {
                 }
             }
 
-            pipeline.create()
+            Pipeline.create()
                 .pipe((data, next) => {
                     utils.executeAsAsync(() => next(data + 1));
                     utils.executeAsAsync(() => next(data + 1));
@@ -174,7 +176,7 @@ describe('piperline', () => {
                 }
             }
 
-            pipeline.create()
+            Pipeline.create()
                 .pipe((data, next, complete) => {
                     utils.executeAsAsync(() => complete(data + 1));
                     utils.executeAsAsync(() => complete(data + 1));
@@ -396,6 +398,24 @@ describe('piperline', () => {
                 });
 
             line.isRunning.should.be.equal(true);
+        });
+
+        xit('should throw an error when pipe handler is not a function', () => {
+            // const pipes = [
+            //     1,
+            //     '1',
+            //     { foo: 'bar' },
+            //     [1],
+            //     null,
+            //     undefined,
+            //     NaN
+            // ];
+            //
+            // const shouldFail = () => {
+            //
+            // };
+            //
+            // ShouldFail.should.Throw();
         });
     });
 });

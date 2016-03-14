@@ -1,7 +1,9 @@
-import { EventEmitter } from 'events';
+import EventEmitter from 'eventemitter3';
 import Symbol from 'es6-symbol';
+import isCallable from 'is-callable';
 import utils from './utils';
 
+const EMITTER = Symbol('EMITTER');
 const PIPES = Symbol('PIPES');
 const ASSEMBLY = Symbol('ASSEMBLY');
 const RUNNING = Symbol('RUNNING');
@@ -36,13 +38,13 @@ function execution(data) {
     });
 }
 
-class Pipeline extends EventEmitter {
+class Pipeline {
     constructor() {
-        super();
+        this[EMITTER] = new EventEmitter();
         this[PIPES] = [];
         this[RUNNING] = false;
         this[PENDING_CALLBACK] = null;
-        this[COMPLETE] = utils.bindFunc(function Complete(result) {
+        this[COMPLETE] = function Complete(result) {
             let error = null;
             let data = result;
 
@@ -57,24 +59,40 @@ class Pipeline extends EventEmitter {
 
             this[RUNNING] = false;
 
-            if (utils.isFunction(callback)) {
+            if (isCallable(callback)) {
                 callback(error, data);
             }
 
-            this.emit(eventName, eventArgs);
-        }, this);
+            this[EMITTER].emit(eventName, eventArgs);
+        }.bind(this);
+    }
+
+    on(...args) {
+        this[EMITTER].on(...args);
+        return this;
+    }
+
+    once(...args) {
+        this[EMITTER].once(...args);
+        return this;
+    }
+
+    off(...args) {
+        this[EMITTER].off(...args);
+        return this;
     }
 
     get isRunning() {
         return this[RUNNING];
     }
 
-    pipe(item) {
+    pipe(handler) {
+        // utils.asserts('"handler" must be a function', isCallable(handler));
         if (this[RUNNING]) {
             throw new Error('Pipeline can not be changed during the run.');
         }
 
-        this[PIPES].push(item);
+        this[PIPES].push(handler);
         this[ASSEMBLY] = null;
         return this;
     }
@@ -86,7 +104,7 @@ class Pipeline extends EventEmitter {
 
         let [context, callback] = args;
 
-        if (utils.isFunction(context)) {
+        if (isCallable(context)) {
             callback = context;
             context = null;
         }
@@ -94,7 +112,7 @@ class Pipeline extends EventEmitter {
         this[RUNNING] = true;
         this[PENDING_CALLBACK] = callback;
 
-        const complete = utils.bindFunc(this[COMPLETE], this);
+        const complete = this[COMPLETE];
 
         if (!this[ASSEMBLY]) {
             let assembly = complete;
@@ -105,10 +123,10 @@ class Pipeline extends EventEmitter {
             for (i = len - 1; i >= 0; i -= 1) {
                 const pipe = pipes[i];
                 if (pipe) {
-                    assembly = utils.bindFunc(execution, {
+                    assembly = execution.bind({
                         invoke: pipe,
                         next: assembly,
-                        complete: complete
+                        complete
                     });
                 }
             }
@@ -116,13 +134,13 @@ class Pipeline extends EventEmitter {
             this[ASSEMBLY] = assembly;
         }
 
-        utils.executeAsAsync(utils.bindFunc(function Run(sym, ctx, done) {
+        utils.executeAsAsync(function Run(sym, ctx, done) {
             try {
                 this[sym](ctx, done);
-            } catch(ex) {
+            } catch (ex) {
                 done(ex);
             }
-        }, this, ASSEMBLY, context, complete));
+        }.bind(this, ASSEMBLY, context, complete));
 
         return this;
     }

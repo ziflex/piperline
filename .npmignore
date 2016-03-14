@@ -4,7 +4,12 @@ logs
 
 # ES6 source files
 src
-.eslintrc
+
+# Browser builds
+dist
+
+# ESLint
+.eslintrc.json
 
 # Mocha tests
 test
@@ -23,5 +28,3 @@ node_modules
 
 # Webstorm files
 .idea
-
-
