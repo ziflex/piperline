@@ -87,10 +87,8 @@ class Pipeline {
     }
 
     pipe(handler) {
-        // utils.asserts('"handler" must be a function', isCallable(handler));
-        if (this[RUNNING]) {
-            throw new Error('Pipeline can not be changed during the run.');
-        }
+        utils.asserts('"handler" must be a function.', isCallable(handler));
+        utils.asserts('Pipeline can not be changed during the run.', !this[RUNNING]);
 
         this[PIPES].push(handler);
         this[ASSEMBLY] = null;
@@ -98,9 +96,7 @@ class Pipeline {
     }
 
     run(...args) {
-        if (this[RUNNING]) {
-            throw new Error('Tasks already are running');
-        }
+        utils.asserts('Tasks already are running.', !this[RUNNING]);
 
         let [context, callback] = args;
 

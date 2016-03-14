@@ -400,22 +400,22 @@ describe('piperline', () => {
             line.isRunning.should.be.equal(true);
         });
 
-        xit('should throw an error when pipe handler is not a function', () => {
-            // const pipes = [
-            //     1,
-            //     '1',
-            //     { foo: 'bar' },
-            //     [1],
-            //     null,
-            //     undefined,
-            //     NaN
-            // ];
-            //
-            // const shouldFail = () => {
-            //
-            // };
-            //
-            // ShouldFail.should.Throw();
+        it('should throw an error when pipe handler is not a function', () => {
+            const handlers = [
+                1,
+                '1',
+                { foo: 'bar' },
+                [1],
+                null,
+                undefined,
+                NaN
+            ];
+
+            const shouldFail = () => {
+                handlers.forEach(x => line.pipe(x));
+            };
+
+            shouldFail.should.Throw();
         });
     });
 });
