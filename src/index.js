@@ -64,6 +64,7 @@ class Pipeline {
             }
 
             this[EMITTER].emit(eventName, eventArgs);
+            this[EMITTER].emit('end', error, data);
         }.bind(this);
     }
 

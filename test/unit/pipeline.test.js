@@ -417,5 +417,47 @@ describe('piperline', () => {
 
             shouldFail.should.Throw();
         });
+
+        it('should emit "end" event when execution is completed (whatever result is)', (done) => {
+            const initialValue = 0;
+            const callbacks = 2;
+            let fired = 0;
+
+            const complete = () => {
+                fired += 1;
+
+                if (fired === callbacks) {
+                    done();
+                }
+            };
+
+            Pipeline.create()
+                .pipe((data, next) => {
+                    utils.executeAsAsync(() => next(data + 1));
+                })
+                .pipe((data, next) => {
+                    utils.executeAsAsync(() => next(data + 2));
+                })
+                .on('end', (err, result) => {
+                    should.not.exist(err);
+                    result.should.eql(3);
+                    complete();
+                })
+                .run(initialValue);
+
+            Pipeline.create()
+                .pipe((data, next) => {
+                    utils.executeAsAsync(() => next(data + 1));
+                })
+                .pipe((data, next) => {
+                    utils.executeAsAsync(() => next(new Error('Test')));
+                })
+                .on('end', (err, result) => {
+                    should.exist(err);
+                    should.not.exist(result);
+                    complete();
+                })
+                .run(0);
+        });
     });
 });
