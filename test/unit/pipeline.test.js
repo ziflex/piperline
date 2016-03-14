@@ -477,5 +477,21 @@ describe('piperline', () => {
                 })
                 .run(0);
         });
+
+        it('should create instance of pipeline with predefiend pipes', (done) => {
+            Pipeline.create([
+                (data, next) => {
+                    utils.executeAsAsync(() => next(data + 1));
+                },
+                (data, next) => {
+                    utils.executeAsAsync(() => next(data + 2));
+                }
+            ])
+                .on('done', (result) => {
+                    result.should.eql(3);
+                    done();
+                })
+                .run(0);
+        });
     });
 });

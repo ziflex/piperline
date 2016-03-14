@@ -11,7 +11,7 @@ const utils = {
         return target instanceof Error;
     },
 
-    asserts(msg, condition) {
+    assert(msg, condition) {
         if (!condition) {
             throw new Error(msg);
         }

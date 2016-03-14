@@ -39,7 +39,7 @@ function execution(data) {
 }
 
 class Pipeline {
-    constructor() {
+    constructor(pipes) {
         this[EMITTER] = new EventEmitter();
         this[PIPES] = [];
         this[RUNNING] = false;
@@ -66,6 +66,13 @@ class Pipeline {
             this[EMITTER].emit(eventName, eventArgs);
             this[EMITTER].emit('end', error, data);
         }.bind(this);
+
+        if (pipes) {
+            const len = pipes.length;
+            for (let i = 0; i < len; i += 1) {
+                this.pipe(pipes[i]);
+            }
+        }
     }
 
     on(...args) {
@@ -88,8 +95,8 @@ class Pipeline {
     }
 
     pipe(handler) {
-        utils.asserts('"handler" must be a function.', isCallable(handler));
-        utils.asserts('Pipeline can not be changed during the run.', !this[RUNNING]);
+        utils.assert('"handler" must be a function.', isCallable(handler));
+        utils.assert('Pipeline can not be changed during the run.', !this[RUNNING]);
 
         this[PIPES].push(handler);
         this[ASSEMBLY] = null;
@@ -97,7 +104,7 @@ class Pipeline {
     }
 
     run(...args) {
-        utils.asserts('Tasks already are running.', !this[RUNNING]);
+        utils.assert('Tasks already are running.', !this[RUNNING]);
 
         let [context, callback] = args;
 
@@ -146,7 +153,7 @@ class Pipeline {
 }
 
 export default {
-    create() {
-        return new Pipeline();
+    create(...args) {
+        return new Pipeline(...args);
     }
 };
