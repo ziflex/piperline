@@ -7,22 +7,16 @@ Simple task pipeline runner which allows you to split you async code into small 
 [![npm version](https://badge.fury.io/js/piperline.svg)](https://www.npmjs.com/package/piperline)
 [![Build Status](https://secure.travis-ci.org/ziflex/piperline.svg?branch=master)](http://travis-ci.org/ziflex/piperline)
 
-## Install
+## Installation
 
-via npm
+npm
 
 ```sh
 
 $ npm install --save piperline
 
 ```
-via bower
 
-```sh
-
-$ bower install --save piperline
-
-```
 
 ## Features
 * async tasks
@@ -37,9 +31,9 @@ $ bower install --save piperline
 
 ```javascript
 
-var piperline = require('piperline');
+var Piperline = require('piperline');
 
-piperline.create()
+Piperline.create()
     .pipe(function(data, next, done) {
         next('foo');
     })
@@ -59,9 +53,9 @@ piperline.create()
 
 ```javascript
 
-var piperline = require('piperline');
+var Piperline = require('piperline');
 
-piperline.create()
+Piperline.create()
     .pipe(function(data, next, done) {
         next(data + 1);
     })
@@ -103,16 +97,13 @@ pipeline
     });
 ```
 
-**Note: The difference between events and callback is, that this callback passed to ``run``
-method is called only once when the execution is completed.**
-
 ### Pipeline interruption
 
 ```javascript
 
-var piperline = require('piperline');
+var Piperline = require('piperline');
 
-piperline.create()
+Piperline.create()
     .pipe(function(data, next, done) {
         next(data + 1);
     })
@@ -139,9 +130,7 @@ piperline.create()
 
 ```javascript
 
-var piperline = require('piperline');
-
-var pipeline = piperline.create();
+var pipeline = require('piperline').create();
 
 pipeline
     .pipe(function(data, next, done) {
@@ -152,14 +141,13 @@ pipeline
         // do stuff
         next();
     })
-    .run(function(err, result) {
-        if (err) {
-            pipeline.run(data);
-        }
+    .on('finish', () => {
+        // everything is completed
     });
-```
 
-**Note: In order to execute the pipeline second time you must wait for the completion of the previous execution.**
+[1, 2, 3, 4].forEach(data => pipeline.run(data));
+
+```
 
 ### Manual error emitting
 
@@ -212,25 +200,22 @@ Builds and runs the execution.
 
 `callback` - callback which will be called when the execution is completed.
 
-
-**Note: This method can be invoked multiple times, but only when the previous execution is completed.**
-
 ### .isRunning()   
 
 Detects whether the pipeline is executing.   
 
 ### .on('run', function())   
 
-When first execution started.   
+Fired every time when execution started and there are no already running in background.  
 
 ### .on('finish', function())   
 
-When all executions completed.
+Fired every time when execution completed and there are no already running in background.  
 
 ### .on('done', function(result))   
 
-On execution successfully complete.   
+Fired for each successful execution.   
 
 ### .on('error', function(error))   
 
-On error occur.   
+Fired for each failed execution.   
