@@ -493,5 +493,44 @@ describe('piperline', () => {
                 })
                 .run(0);
         });
+
+        it('should create new pipeline using "clone" method', (done) => {
+            const original = Pipeline.create([
+                (data, next) => {
+                    utils.executeAsAsync(() => next(data + 1));
+                },
+                (data, next) => {
+                    utils.executeAsAsync(() => next(data + 2));
+                }
+            ]);
+
+            const cloned = original.clone();
+
+            cloned.pipe((data, next) => {
+                next(data + 3);
+            });
+
+            const complete = ((function create(tasks) {
+                let counter = 0;
+                return function tryToComplete() {
+                    counter += 1;
+
+                    if (counter === tasks) {
+                        done();
+                    }
+                };
+            })(2));
+
+            original.run(0, (err, result) => {
+                should.not.exist(err);
+                result.should.eql(3);
+                complete();
+            });
+            cloned.run(0, (err, result) => {
+                should.not.exist(err);
+                result.should.eql(6);
+                complete();
+            });
+        });
     });
 });

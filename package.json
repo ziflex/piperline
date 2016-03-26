@@ -6,9 +6,9 @@
   "scripts": {
     "clean": "rimraf lib",
     "lint": "eslint -c ./.eslintrc.json src",
-    "build": "npm run lint && npm run clean && babel src --out-dir lib",
     "test": "npm run lint && mocha --reporter spec --require babel-register --recursive test",
-    "prepublish": "npm run test && npm run build"
+    "build": "npm run test && npm run clean && babel src --out-dir lib",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "async",
@@ -29,7 +29,6 @@
     "babel-preset-stage-0": "^6.5.0",
     "babel-register": "^6.7.2",
     "chai": "^3.5.0",
-    "esdoc": "^0.4.6",
     "eslint": "^2.4.0",
     "eslint-config-airbnb": "^6.1.0",
     "eslint-plugin-mocha": "^2.0.0",
@@ -40,12 +39,5 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/ziflex/piperline.git"
-  },
-  "browserify": {
-    "transform": [
-      [
-        "babelify"
-      ]
-    ]
   }
 }

@@ -94,6 +94,10 @@ class Pipeline {
         return this[RUNNING];
     }
 
+    clone() {
+        return new Pipeline(this[PIPES].slice(0));
+    }
+
     pipe(handler) {
         utils.assert('"handler" must be a function.', isCallable(handler));
         utils.assert('Pipeline can not be changed during the run.', !this[RUNNING]);
@@ -152,7 +156,7 @@ class Pipeline {
     }
 }
 
-export default {
+module.exports = {
     create(...args) {
         return new Pipeline(...args);
     }

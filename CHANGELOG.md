@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3
+## 0.3.0
 
 ### Changed
 - Replaced Node EventEmitter with EventEmitter3.
@@ -10,6 +10,7 @@
 - ``end`` event. Fired every time when execution completed despite what result is.
 - ``run`` event. Fired every time when execution started.
 - Possibility to pass array of pipes during initialization.
+- ``clone`` method in order to create separate pipeline based on current one.
 
 ### Removed
 - [Breaking changes] Removed inheritance from EventEmitter. Exposed only methods ``on``, ``once``, ``off``.
