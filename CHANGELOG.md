@@ -3,18 +3,20 @@
 ## 0.3.0
 
 ### Changed
+- Multiple runs. Now you can run pipeline in parallel.
 - Replaced Node EventEmitter with EventEmitter3.
 - Removed dependency on ``lodash._basebind``. Native implementation is used.
 
 ### Added
-- ``end`` event. Fired every time when execution completed despite what result is.
+- ``finish`` event. Fired every time when all executions completed despite what result is.
 - ``run`` event. Fired every time when execution started.
-- Possibility to pass array of pipes during initialization.
 - ``clone`` method in order to create separate pipeline based on current one.
+- Possibility to pass array of pipes during initialization.
 
 ### Removed
 - [Breaking changes] Removed inheritance from EventEmitter. Exposed only methods ``on``, ``once``, ``off``.
 - [Breaking changes] Removed packages from bower.
+- [Breaking changes] isRunning property to method.
 
 ## 0.2.2
 

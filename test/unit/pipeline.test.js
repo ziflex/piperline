@@ -1,9 +1,9 @@
 /* eslint-disable new-cap, prefer-template */
-
-import Pipeline from '../../src/index';
-import utils from '../../src/utils';
 import chai from 'chai';
 import spies from 'chai-spies';
+import Pipeline from '../../src/index';
+import utils from '../../src/utils';
+import { complete as completeTasks } from '../utils';
 
 chai.use(spies);
 const should = chai.should();
@@ -60,19 +60,35 @@ describe('piperline', () => {
     });
 
     describe('execution', () => {
-        it('should NOT run until the previous execution completed', (done) => {
-            function ShouldFail() {
-                line
-                    .pipe((data, next) => utils.executeAsAsync(() => next(data)))
-                    .pipe((data, next) => utils.executeAsAsync(() => next(data)))
-                    .pipe((data, next) => utils.executeAsAsync(() => next(data)));
+        it('should be able to run in parallel', (done) => {
+            const complete = completeTasks(3, done);
 
-                line.run(0);
-                line.run(0);
-            }
+            line
+                .pipe((data, next) => utils.executeAsAsync(() => next(data + 1)))
+                .pipe((data, next) => utils.executeAsAsync(() => next(data + 2)))
+                .pipe((data, next) => utils.executeAsAsync(() => next(data + 3)));
 
-            ShouldFail.should.Throw();
-            done();
+            line.run(0, (err, result) => {
+                should.not.exist(err);
+                result.should.eql(6);
+                complete();
+            });
+
+            setTimeout(() => {
+                line.run(5, (err, result) => {
+                    should.not.exist(err);
+                    result.should.eql(11);
+                    complete();
+                });
+            }, 5);
+
+            setTimeout(() => {
+                line.run(10, (err, result) => {
+                    should.not.exist(err);
+                    result.should.eql(16);
+                    complete();
+                });
+            }, 10);
         });
 
         it('should NOT execute `next()` and `done()` at the same time', (done) => {
@@ -141,7 +157,7 @@ describe('piperline', () => {
                         result.should.be.equal(2);
                         spy1.should.have.been.called.once();
                         done();
-                    }, 100);
+                    }, 20);
                 }
             }
 
@@ -172,7 +188,7 @@ describe('piperline', () => {
                         result.should.be.equal(1);
                         spy1.should.not.have.been.called();
                         done();
-                    }, 100);
+                    }, 20);
                 }
             }
 
@@ -377,7 +393,7 @@ describe('piperline', () => {
 
             line
                 .pipe((data, next) => {
-                    setTimeout(() => next(), 200);
+                    setTimeout(() => next(), 20);
                 })
                 .run();
 
@@ -385,19 +401,19 @@ describe('piperline', () => {
             done();
         });
 
-        it('``isRunning`` property should be up to date', (done) => {
-            line.isRunning.should.be.equal(false);
+        it('``isRunning`` method should be up to date', (done) => {
+            line.isRunning().should.be.equal(false);
 
             line
                 .pipe((data, next) => {
-                    setTimeout(() => next(), 200);
+                    setTimeout(() => next(), 20);
                 })
                 .run(() => {
-                    line.isRunning.should.be.equal(false);
+                    line.isRunning().should.be.equal(false);
                     done();
                 });
 
-            line.isRunning.should.be.equal(true);
+            line.isRunning().should.be.equal(true);
         });
 
         it('should throw an error when pipe handler is not a function', () => {
@@ -418,64 +434,44 @@ describe('piperline', () => {
             shouldFail.should.Throw();
         });
 
-        it('should emit "end" event when execution is completed (whatever result is)', (done) => {
-            const initialValue = 0;
-            const callbacks = 2;
-            let fired = 0;
+        it('should emit "finish" event when execution completed', (done) => {
+            const spy = chai.spy();
+            const complete = completeTasks(2, () => {
+                spy.should.have.been.called.once();
+                done();
+            });
 
-            const complete = () => {
-                fired += 1;
-
-                if (fired === callbacks) {
-                    done();
-                }
-            };
-
-            Pipeline.create()
+            line
                 .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + 1));
+                    utils.executeAsAsync(next);
                 })
                 .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + 2));
+                    utils.executeAsAsync(next);
                 })
-                .on('end', (err, result) => {
-                    should.not.exist(err);
-                    result.should.eql(3);
-                    complete();
-                })
-                .run(initialValue);
+                .on('finish', spy);
 
-            Pipeline.create()
-                .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + 1));
-                })
-                .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(new Error('Test')));
-                })
-                .on('end', (err, result) => {
-                    should.exist(err);
-                    should.not.exist(result);
-                    complete();
-                })
-                .run(0);
+            line.run(complete);
+            line.run(complete);
         });
 
-        it('should emit "run" everytime when pipeline was started', (done) => {
+        it('should emit "run" when pipeline started', (done) => {
             const spy = chai.spy();
+            const complete = completeTasks(2, () => {
+                spy.should.have.been.called.once();
+                done();
+            });
 
-            Pipeline.create()
+            line
                 .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + 1));
+                    utils.executeAsAsync(next);
                 })
                 .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + 2));
+                    utils.executeAsAsync(next);
                 })
-                .on('run', spy)
-                .on('end', () => {
-                    spy.should.have.been.called.once();
-                    done();
-                })
-                .run(0);
+                .on('run', spy);
+
+            line.run(complete);
+            line.run(complete);
         });
 
         it('should create instance of pipeline with predefiend pipes', (done) => {
@@ -510,16 +506,7 @@ describe('piperline', () => {
                 next(data + 3);
             });
 
-            const complete = ((function create(tasks) {
-                let counter = 0;
-                return function tryToComplete() {
-                    counter += 1;
-
-                    if (counter === tasks) {
-                        done();
-                    }
-                };
-            })(2));
+            const complete = completeTasks(2, done);
 
             original.run(0, (err, result) => {
                 should.not.exist(err);

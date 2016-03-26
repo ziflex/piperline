@@ -3,48 +3,64 @@ import Symbol from 'es6-symbol';
 import isCallable from 'is-callable';
 import utils from './utils';
 
-const EMITTER = Symbol('EMITTER');
-const PIPES = Symbol('PIPES');
-const ASSEMBLY = Symbol('ASSEMBLY');
-const RUNNING = Symbol('RUNNING');
-const PENDING_CALLBACK = Symbol('PENDING_CALLBACK');
-const COMPLETE = Symbol('COMPLETE');
+const FIELDS = {
+    emitter: Symbol('emitter'),
+    pipes: Symbol('pipes'),
+    assembly: Symbol('assembly'),
+    counter: Symbol('counter')
+};
 
-function execution(data) {
-    // Terminates the execution if data is `Error` object.
-    if (utils.isError(data)) {
-        this.complete(data);
-        return;
-    }
+const METHODS = {
+    complete: Symbol('complete')
+};
 
-    utils.executeAsAsync(() => {
-        const context = { done: false };
+function createPipe(handler, next) {
+    return function pipe(data, complete) {
+        // Terminates the execution if data is `Error` object.
+        if (utils.isError(data)) {
+            complete(data);
+            return;
+        }
+
+        let executed = false;
 
         try {
-            this.invoke(data, (result) => {
-                if (!context.done) {
-                    context.done = true;
-                    this.next(result);
+            handler(
+                data,
+                function onNext(result) {
+                    if (executed) {
+                        return;
+                    }
+
+                    executed = true;
+
+                    if (next) {
+                        next(result, complete);
+                    } else {
+                        complete(result);
+                    }
+                },
+                function onComplete(result) {
+                    if (executed) {
+                        return;
+                    }
+
+                    executed = true;
+                    complete(result);
                 }
-            }, (result) => {
-                if (!context.done) {
-                    context.done = true;
-                    this.complete(result);
-                }
-            });
-        } catch (ex) {
-            this.complete(ex);
+            );
+        } catch (err) {
+            complete(err);
         }
-    });
+    };
 }
 
 class Pipeline {
     constructor(pipes) {
-        this[EMITTER] = new EventEmitter();
-        this[PIPES] = [];
-        this[RUNNING] = false;
-        this[PENDING_CALLBACK] = null;
-        this[COMPLETE] = function Complete(result) {
+        this[FIELDS.emitter] = new EventEmitter();
+        this[FIELDS.pipes] = [];
+        this[FIELDS.counter] = 0;
+        this[METHODS.complete] = function Complete(result, callback) {
             let error = null;
             let data = result;
 
@@ -53,19 +69,20 @@ class Pipeline {
                 data = null;
             }
 
-            const callback = this[PENDING_CALLBACK];
             const eventName = !error ? 'done' : 'error';
             const eventArgs = error || data;
 
-            this[RUNNING] = false;
+            this[FIELDS.emitter].emit(eventName, eventArgs);
+            this[FIELDS.counter] -= 1;
+
+            if (this[FIELDS.counter] === 0) {
+                this[FIELDS.emitter].emit('finish');
+            }
 
             if (isCallable(callback)) {
                 callback(error, data);
             }
-
-            this[EMITTER].emit(eventName, eventArgs);
-            this[EMITTER].emit('end', error, data);
-        }.bind(this);
+        };
 
         if (pipes) {
             const len = pipes.length;
@@ -76,81 +93,78 @@ class Pipeline {
     }
 
     on(...args) {
-        this[EMITTER].on(...args);
+        this[FIELDS.emitter].on(...args);
         return this;
     }
 
     once(...args) {
-        this[EMITTER].once(...args);
+        this[FIELDS.emitter].once(...args);
         return this;
     }
 
     off(...args) {
-        this[EMITTER].off(...args);
+        this[FIELDS.emitter].off(...args);
         return this;
     }
 
-    get isRunning() {
-        return this[RUNNING];
+    isRunning() {
+        return this[FIELDS.counter] > 0;
     }
 
     clone() {
-        return new Pipeline(this[PIPES].slice(0));
+        return new Pipeline(this[FIELDS.pipes].slice(0));
     }
 
     pipe(handler) {
         utils.assert('"handler" must be a function.', isCallable(handler));
-        utils.assert('Pipeline can not be changed during the run.', !this[RUNNING]);
+        utils.assert('Pipeline can not be changed during execution.', !this.isRunning());
 
-        this[PIPES].push(handler);
-        this[ASSEMBLY] = null;
+        this[FIELDS.pipes].push(handler);
+        this[FIELDS.assembly] = null;
         return this;
     }
 
     run(...args) {
-        utils.assert('Tasks already are running.', !this[RUNNING]);
+        let [data, callback] = args;
 
-        let [context, callback] = args;
-
-        if (isCallable(context)) {
-            callback = context;
-            context = null;
+        if (isCallable(data)) {
+            callback = data;
+            data = null;
         }
 
-        this[RUNNING] = true;
-        this[PENDING_CALLBACK] = callback;
+        this[FIELDS.isRunning] = true;
 
-        const complete = this[COMPLETE];
+        const complete = (result) => this[METHODS.complete](result, callback);
 
-        if (!this[ASSEMBLY]) {
-            let assembly = complete;
-            const pipes = this[PIPES];
+        if (!this[FIELDS.assembly]) {
+            const pipes = this[FIELDS.pipes];
             const len = pipes.length;
+            let assembly = null;
             let i;
 
             for (i = len - 1; i >= 0; i -= 1) {
                 const pipe = pipes[i];
                 if (pipe) {
-                    assembly = execution.bind({
-                        invoke: pipe,
-                        next: assembly,
-                        complete
-                    });
+                    assembly = createPipe(pipe, assembly);
                 }
             }
 
-            this[ASSEMBLY] = assembly;
+            this[FIELDS.assembly] = assembly;
         }
 
-        this[EMITTER].emit('run');
+        if (this[FIELDS.counter] === 0) {
+            this[FIELDS.emitter].emit('run');
+        }
 
-        utils.executeAsAsync(function Run(asm, ctx, done) {
+        this[FIELDS.counter] += 1;
+
+        utils.executeAsAsync(() => {
             try {
-                asm(ctx, done);
+                this[FIELDS.assembly](data, complete);
             } catch (ex) {
-                done(ex);
+                complete(ex);
             }
-        }.bind(this, this[ASSEMBLY], context, complete));
+        });
 
         return this;
     }

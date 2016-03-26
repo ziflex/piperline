@@ -215,17 +215,17 @@ Builds and runs the execution.
 
 **Note: This method can be invoked multiple times, but only when the previous execution is completed.**
 
-### .isRunning   
+### .isRunning()   
 
-Detects whether the execution is running.   
+Detects whether the pipeline is executing.   
 
 ### .on('run', function())   
 
-On execution start.   
+When first execution started.   
 
-### .on('end', function(err, result))   
+### .on('finish', function())   
 
-On execution complete. It's fired whenever what result of execution is.   
+When all executions completed.
 
 ### .on('done', function(result))   
 
