@@ -1,13 +1,14 @@
 {
   "name": "piperline",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Simple task pipeline runner.",
   "main": "lib/index.js",
   "scripts": {
     "clean": "rimraf lib",
     "lint": "eslint -c ./.eslintrc.json src",
     "test": "npm run lint && mocha --reporter spec --require babel-register --recursive test",
-    "build": "npm run test && npm run clean && babel src --out-dir lib"
+    "build": "npm run test && npm run clean && babel src --out-dir lib",
+    "prepublish": "npm run build"
   },
   "keywords": [
     "async",
