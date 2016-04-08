@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1
+
+### Fixed
+- Failed when pipeline is empty.
+
 ## 0.3.0
 
 ### Added
