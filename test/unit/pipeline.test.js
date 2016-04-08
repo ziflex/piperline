@@ -519,5 +519,15 @@ describe('piperline', () => {
                 complete();
             });
         });
+
+        it('should not fail if empty', (done) => {
+            should.not.throw(() => {
+                Pipeline.create().run('foo', (err, data) => {
+                    should.not.exist(err, 'error');
+                    should.exist(data, 'data');
+                    done();
+                });
+            });
+        });
     });
 });

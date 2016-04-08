@@ -160,6 +160,13 @@ class Pipeline {
 
         utils.executeAsAsync(() => {
             try {
+                const asm = this[FIELDS.assembly];
+
+                if (!asm) {
+                    complete(data);
+                    return;
+                }
+
                 this[FIELDS.assembly](data, complete);
             } catch (ex) {
                 complete(ex);
