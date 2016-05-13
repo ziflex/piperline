@@ -1,4 +1,4 @@
-/* eslint-disable new-cap, prefer-template */
+/* eslint-disable new-cap, prefer-template, no-unused-expressions */
 import chai from 'chai';
 import spies from 'chai-spies';
 import Pipeline from '../../src/index';
@@ -200,6 +200,26 @@ describe('piperline', () => {
                 .pipe(spy1)
                 .on('done', callback)
                 .run(0);
+        });
+
+        it('should call passed callback only once when error occured during execution', (done) => {
+            const callback = chai.spy();
+
+            const pipeline = Pipeline.create()
+                .pipe((data, next, complete) => {
+                    complete(new Error('pipe'));
+                    throw new Error('callback');
+                });
+
+
+            pipeline.run({}, () => {
+                callback();
+            });
+
+            setTimeout(() => {
+                callback.should.have.been.called.once();
+                done();
+            }, 10);
         });
 
         it('should stop execution', (done) => {

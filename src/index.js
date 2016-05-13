@@ -36,9 +36,10 @@ function createPipe(handler, next) {
 
                     if (next) {
                         next(result, complete);
-                    } else {
-                        complete(result);
+                        return;
                     }
+
+                    complete(result);
                 },
                 function onComplete(result) {
                     if (executed) {
@@ -50,6 +51,10 @@ function createPipe(handler, next) {
                 }
             );
         } catch (err) {
+            if (executed) {
+                return;
+            }
+
             complete(err);
         }
     };
@@ -167,7 +172,7 @@ class Pipeline {
                     return;
                 }
 
-                this[FIELDS.assembly](data, complete);
+                asm(data, complete);
             } catch (ex) {
                 complete(ex);
             }
