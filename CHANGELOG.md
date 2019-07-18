@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.0
+### Changed
+- Updated dependencies.
+
 ## 0.3.3
 ### Fixed
 - Calling twice 'onComplete' callback when error occurs inside pipe.
