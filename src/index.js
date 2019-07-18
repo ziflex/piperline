@@ -139,7 +139,7 @@ class Pipeline {
 
         this[FIELDS.isRunning] = true;
 
-        const complete = (result) => this[METHODS.complete](result, callback);
+        const complete = result => this[METHODS.complete](result, callback);
 
         if (!this[FIELDS.assembly]) {
             const pipes = this[FIELDS.pipes];
