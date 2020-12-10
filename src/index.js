@@ -1,5 +1,4 @@
 import EventEmitter from 'eventemitter3';
-import Symbol from 'es6-symbol';
 import isCallable from 'is-callable';
 import utils from './utils';
 
@@ -7,11 +6,11 @@ const FIELDS = {
     emitter: Symbol('emitter'),
     pipes: Symbol('pipes'),
     assembly: Symbol('assembly'),
-    counter: Symbol('counter')
+    counter: Symbol('counter'),
 };
 
 const METHODS = {
-    complete: Symbol('complete')
+    complete: Symbol('complete'),
 };
 
 function createPipe(handler, next) {
@@ -48,7 +47,7 @@ function createPipe(handler, next) {
 
                     executed = true;
                     complete(result);
-                }
+                },
             );
         } catch (err) {
             if (executed) {
@@ -139,7 +138,7 @@ class Pipeline {
 
         this[FIELDS.isRunning] = true;
 
-        const complete = result => this[METHODS.complete](result, callback);
+        const complete = (result) => this[METHODS.complete](result, callback);
 
         if (!this[FIELDS.assembly]) {
             const pipes = this[FIELDS.pipes];
@@ -185,5 +184,5 @@ class Pipeline {
 module.exports = {
     create(...args) {
         return new Pipeline(...args);
-    }
+    },
 };

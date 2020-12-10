@@ -1,3 +1,4 @@
+/* eslint-disable func-names */
 /* eslint-disable new-cap, prefer-template, no-unused-expressions */
 import chai, { expect } from 'chai';
 import sinon from 'sinon';
@@ -8,21 +9,20 @@ import { complete as completeTasks } from '../utils';
 
 chai.use(sinonChai);
 
-describe('piperline', () => {
+describe('piperline', function () {
     let line = null;
 
-    beforeEach(() => {
+    beforeEach(function () {
         line = Pipeline.create();
     });
 
-    describe('building', () => {
-        it('should execute in order', (done) => {
+    describe('building', function () {
+        it('should execute in order', function (done) {
             let result = '';
-            line
-                .pipe((data, next) => {
-                    result += '1';
-                    utils.executeAsAsync(() => next());
-                })
+            line.pipe((data, next) => {
+                result += '1';
+                utils.executeAsAsync(() => next());
+            })
                 .pipe((data, next) => {
                     result += '2';
                     utils.executeAsAsync(() => next());
@@ -39,12 +39,11 @@ describe('piperline', () => {
         });
     });
 
-    describe('data flow', () => {
-        it('should pass down the data', (done) => {
-            line
-                .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + '1'));
-                })
+    describe('data flow', function () {
+        it('should pass down the data', function (done) {
+            line.pipe((data, next) => {
+                utils.executeAsAsync(() => next(data + '1'));
+            })
                 .pipe((data, next) => {
                     utils.executeAsAsync(() => next(data + '2'));
                 })
@@ -59,12 +58,11 @@ describe('piperline', () => {
         });
     });
 
-    describe('execution', () => {
-        it('should be able to run in parallel', (done) => {
+    describe('execution', function () {
+        it('should be able to run in parallel', function (done) {
             const complete = completeTasks(3, done);
 
-            line
-                .pipe((data, next) => utils.executeAsAsync(() => next(data + 1)))
+            line.pipe((data, next) => utils.executeAsAsync(() => next(data + 1)))
                 .pipe((data, next) => utils.executeAsAsync(() => next(data + 2)))
                 .pipe((data, next) => utils.executeAsAsync(() => next(data + 3)));
 
@@ -91,7 +89,7 @@ describe('piperline', () => {
             }, 10);
         });
 
-        it('should NOT execute `next()` and `done()` at the same time', (done) => {
+        it('should NOT execute `next()` and `done()` at the same time', function (done) {
             const callbacksCount = 2;
             let callbacks = 0;
 
@@ -140,7 +138,7 @@ describe('piperline', () => {
                 .run(0);
         });
 
-        it('should execute `next()` only once per call', (done) => {
+        it('should execute `next()` only once per call', function (done) {
             const spy1 = sinon.spy((data, next, complete) => {
                 utils.executeAsAsync(() => complete(data + 1));
             });
@@ -171,7 +169,7 @@ describe('piperline', () => {
                 .run(0);
         });
 
-        it('should execute `done()` only once per run', (done) => {
+        it('should execute `done()` only once per run', function (done) {
             const spy1 = sinon.spy((data, next) => {
                 utils.executeAsAsync(() => next(data + 1));
             });
@@ -202,15 +200,13 @@ describe('piperline', () => {
                 .run(0);
         });
 
-        it('should call passed callback only once when error occured during execution', (done) => {
+        it('should call passed callback only once when error occured during execution', function (done) {
             const callback = sinon.spy();
 
-            const pipeline = Pipeline.create()
-                .pipe((data, next, complete) => {
-                    complete(new Error('pipe'));
-                    throw new Error('callback');
-                });
-
+            const pipeline = Pipeline.create().pipe((data, next, complete) => {
+                complete(new Error('pipe'));
+                throw new Error('callback');
+            });
 
             pipeline.run({}, () => {
                 callback();
@@ -222,7 +218,7 @@ describe('piperline', () => {
             }, 10);
         });
 
-        it('should stop execution', (done) => {
+        it('should stop execution', function (done) {
             const spy1 = sinon.spy((data, next) => {
                 utils.executeAsAsync(() => next(data + 1));
             });
@@ -235,8 +231,7 @@ describe('piperline', () => {
                 utils.executeAsAsync(() => next(data + 3));
             });
 
-            line
-                .pipe(spy1)
+            line.pipe(spy1)
                 .pipe(spy2)
                 .pipe(spy3)
                 .on('done', (data) => {
@@ -249,14 +244,13 @@ describe('piperline', () => {
                 .run(0);
         });
 
-        it('should handle errors', (done) => {
+        it('should handle errors', function (done) {
             const doneSpy = sinon.spy();
             const error = new Error('Test error');
 
-            line
-                .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data + 1));
-                })
+            line.pipe((data, next) => {
+                utils.executeAsAsync(() => next(data + 1));
+            })
                 .pipe(() => {
                     throw error;
                 })
@@ -272,7 +266,7 @@ describe('piperline', () => {
                 .run(0);
         });
 
-        it('should be able to run multiple times', (done) => {
+        it('should be able to run multiple times', function (done) {
             const spy1 = sinon.spy((data, next) => {
                 utils.executeAsAsync(() => next());
             });
@@ -281,8 +275,7 @@ describe('piperline', () => {
                 utils.executeAsAsync(() => next());
             });
 
-            line
-                .pipe(spy1)
+            line.pipe(spy1)
                 .pipe(spy2)
                 .run(0, (err, result) => {
                     expect(err).not.exist;
@@ -292,13 +285,12 @@ describe('piperline', () => {
                 });
         });
 
-        it('should emit error by passing `Error` object to `complete` callback', (done) => {
+        it('should emit error by passing `Error` object to `complete` callback', function (done) {
             const errSpy = sinon.spy();
 
-            line
-                .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(data));
-                })
+            line.pipe((data, next) => {
+                utils.executeAsAsync(() => next(data));
+            })
                 .pipe((data, next, complete) => {
                     utils.executeAsAsync(() => complete(new Error('Test error')));
                 })
@@ -314,16 +306,15 @@ describe('piperline', () => {
                 });
         });
 
-        it('should emit error by passing `Error` object to `next` callback and terminate the execution', (done) => {
+        it('should emit error by passing `Error` object to `next` callback and terminate the execution', function (done) {
             const errSpy = sinon.spy();
             const spy = sinon.spy((data, next) => {
                 utils.executeAsAsync(() => next());
             });
 
-            line
-                .pipe((data, next) => {
-                    utils.executeAsAsync(() => next(new Error('Test error')));
-                })
+            line.pipe((data, next) => {
+                utils.executeAsAsync(() => next(new Error('Test error')));
+            })
                 .pipe((data, next) => {
                     utils.executeAsAsync(() => next(data));
                 })
@@ -341,7 +332,7 @@ describe('piperline', () => {
                 });
         });
 
-        it('should terminate the execution if initial data is `Error`', (done) => {
+        it('should terminate the execution if initial data is `Error`', function (done) {
             const errSpy = sinon.spy();
             const spy1 = sinon.spy((data, next) => {
                 utils.executeAsAsync(() => next());
@@ -355,8 +346,7 @@ describe('piperline', () => {
                 utils.executeAsAsync(() => next());
             });
 
-            line
-                .pipe(spy1)
+            line.pipe(spy1)
                 .pipe(spy2)
                 .pipe(spy3)
                 .on('error', errSpy)
@@ -374,7 +364,7 @@ describe('piperline', () => {
                 });
         });
 
-        it('should be able to add new pipes', (done) => {
+        it('should be able to add new pipes', function (done) {
             const spy1 = sinon.spy((data, next) => {
                 utils.executeAsAsync(() => next(data));
             });
@@ -387,84 +377,68 @@ describe('piperline', () => {
                 utils.executeAsAsync(() => next(data));
             });
 
-            line
-                .pipe(spy1)
+            line.pipe(spy1)
                 .pipe(spy2)
                 .run(() => {
-                    line
-                        .pipe(spy3)
-                        .run((err, data) => {
-                            expect(err).not.exist;
-                            expect(data).not.exist;
+                    line.pipe(spy3).run((err, data) => {
+                        expect(err).not.exist;
+                        expect(data).not.exist;
 
-                            expect(spy1).have.been.calledTwice;
-                            expect(spy2).have.been.calledTwice;
-                            expect(spy3).have.been.calledOnce;
+                        expect(spy1).have.been.calledTwice;
+                        expect(spy2).have.been.calledTwice;
+                        expect(spy3).have.been.calledOnce;
 
-                            done();
-                        });
+                        done();
+                    });
                 });
         });
 
-        it('should throw exception when pipes is tried to be added during execution', (done) => {
+        it('should throw exception when pipes is tried to be added during execution', function (done) {
             const func = () => {
                 line.pipe((data, next) => next());
             };
 
-            line
-                .pipe((data, next) => {
-                    setTimeout(() => next(), 20);
-                })
-                .run();
+            line.pipe((data, next) => {
+                setTimeout(() => next(), 20);
+            }).run();
 
             expect(func).throw;
             done();
         });
 
-        it('``isRunning`` method should be up to date', (done) => {
+        it('``isRunning`` method should be up to date', function (done) {
             expect(line.isRunning()).to.be.equal(false);
 
-            line
-                .pipe((data, next) => {
-                    setTimeout(() => next(), 20);
-                })
-                .run(() => {
-                    expect(line.isRunning()).be.equal(false);
-                    done();
-                });
+            line.pipe((data, next) => {
+                setTimeout(() => next(), 20);
+            }).run(() => {
+                expect(line.isRunning()).be.equal(false);
+                done();
+            });
 
             expect(line.isRunning()).be.equal(true);
         });
 
-        it('should throw an error when pipe handler is not a function', () => {
-            const handlers = [
-                1,
-                '1',
-                { foo: 'bar' },
-                [1],
-                null,
-                undefined,
-                NaN
-            ];
+        it('should throw an error when pipe handler is not a function', function () {
+            const handlers = [1, '1', { foo: 'bar' }, [1], null, undefined, NaN];
 
             const shouldFail = () => {
-                handlers.forEach(x => line.pipe(x));
+                handlers.forEach((x) => line.pipe(x));
             };
 
             expect(shouldFail).Throw();
         });
 
-        it('should emit "finish" event when execution completed', (done) => {
+        it('should emit "finish" event when execution completed', function (done) {
             const spy = sinon.spy();
             const complete = completeTasks(2, () => {
                 expect(spy).to.have.been.calledOnce;
                 done();
             });
 
-            line
-                .pipe((data, next) => {
-                    utils.executeAsAsync(next);
-                })
+            line.pipe((data, next) => {
+                utils.executeAsAsync(next);
+            })
                 .pipe((data, next) => {
                     utils.executeAsAsync(next);
                 })
@@ -474,17 +448,16 @@ describe('piperline', () => {
             line.run(complete);
         });
 
-        it('should emit "run" when pipeline started', (done) => {
+        it('should emit "run" when pipeline started', function (done) {
             const spy = sinon.spy();
             const complete = completeTasks(2, () => {
                 expect(spy).to.have.been.calledOnce;
                 done();
             });
 
-            line
-                .pipe((data, next) => {
-                    utils.executeAsAsync(next);
-                })
+            line.pipe((data, next) => {
+                utils.executeAsAsync(next);
+            })
                 .pipe((data, next) => {
                     utils.executeAsAsync(next);
                 })
@@ -494,14 +467,14 @@ describe('piperline', () => {
             line.run(complete);
         });
 
-        it('should create instance of pipeline with predefiend pipes', (done) => {
+        it('should create instance of pipeline with predefiend pipes', function (done) {
             Pipeline.create([
                 (data, next) => {
                     utils.executeAsAsync(() => next(data + 1));
                 },
                 (data, next) => {
                     utils.executeAsAsync(() => next(data + 2));
-                }
+                },
             ])
                 .on('done', (result) => {
                     expect(result).eql(3);
@@ -510,14 +483,14 @@ describe('piperline', () => {
                 .run(0);
         });
 
-        it('should create new pipeline using "clone" method', (done) => {
+        it('should create new pipeline using "clone" method', function (done) {
             const original = Pipeline.create([
                 (data, next) => {
                     utils.executeAsAsync(() => next(data + 1));
                 },
                 (data, next) => {
                     utils.executeAsAsync(() => next(data + 2));
-                }
+                },
             ]);
 
             const cloned = original.clone();
@@ -540,7 +513,7 @@ describe('piperline', () => {
             });
         });
 
-        it('should not fail if empty', (done) => {
+        it('should not fail if empty', function (done) {
             expect(() => {
                 Pipeline.create().run('foo', (err, data) => {
                     expect(err).not.exist;
