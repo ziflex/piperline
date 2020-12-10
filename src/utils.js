@@ -15,7 +15,7 @@ const utils = {
         if (!condition) {
             throw new Error(msg);
         }
-    }
+    },
 };
 
 export default utils;

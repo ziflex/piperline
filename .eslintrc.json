@@ -1,21 +1,18 @@
 {
-  "extends": "airbnb/base",
-  "parser": "babel-eslint",
-  "parserOptions": {
-    "ecmaVersion": 6,
-    "sourceType": "module"
-  },
   "env": {
     "browser": true,
+    "es2021": true,
+    "node": true,
     "mocha": true
   },
+  "extends": ["airbnb-base", "plugin:prettier/recommended", "plugin:mocha/recommended"],
   "plugins": [
-      "mocha"
+    "mocha",
+    "prettier"
   ],
-  "rules": {
-    "indent": [2, 4],
-    "comma-dangle": 0,
-    "max-len": 0,
-    "prefer-arrow-callback": 0
-  }
+  "parserOptions": {
+    "ecmaVersion": 12,
+    "sourceType": "module"
+  },
+  "rules": {}
 }
