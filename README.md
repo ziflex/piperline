@@ -5,7 +5,7 @@
 Simple task pipeline runner which allows you to split you async code into small tasks.
 
 [![npm version](https://badge.fury.io/js/piperline.svg)](https://www.npmjs.com/package/piperline)
-[![Build Status](https://secure.travis-ci.org/ziflex/piperline.svg?branch=master)](http://travis-ci.org/ziflex/piperline)
+[![Actions Status](https://github.com/ziflex/piperline/workflows/Node%20CI/badge.svg)](https://github.com/ziflex/piperline/actions)
 
 ## Installation
 
