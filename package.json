@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Simple task pipeline runner.",
   "main": "lib/index.js",
+  "types": "index.d.ts",
   "scripts": {
     "clean": "rimraf lib",
     "lint": "eslint -c ./.eslintrc.json src",
